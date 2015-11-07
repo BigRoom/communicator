@@ -29,27 +29,40 @@ func (c *Communicator) With(d interface{}) *Communicator {
 	return NewCommunicatorWithCtx(c.w, d)
 }
 
-func (c *Communicator) OK(form string, s ...interface{}) {
+func (c *Communicator) OKf(form string, s ...interface{}) {
+	c.OK(fmt.Sprintf(form, s...))
+}
+
+func (c *Communicator) OK(s ...interface{}) {
 	c.write(response{
-		Message: fmt.Sprintf(form, s...),
+		Message: format(s...),
 		Error:   false,
 		Code:    http.StatusOK,
 		Data:    c.context,
 	})
 }
 
-func (c *Communicator) Fail(form string, s ...interface{}) {
+func (c *Communicator) Failf(form string, s ...interface{}) {
+	c.Fail(fmt.Sprintf(form, s...))
+}
+
+func (c *Communicator) Fail(s ...interface{}) {
 	c.write(response{
-		Message: fmt.Sprintf(form, s...),
+		Message: format(s...),
 		Error:   true,
 		Code:    http.StatusConflict,
 		Data:    c.context,
 	})
 }
 
-func (c *Communicator) Error(form string, s ...interface{}) {
+func (c *Communicator) Errorf(form string, s ...interface{}) {
+	c.Error(fmt.Sprintf(form, s...))
+
+}
+
+func (c *Communicator) Error(s ...interface{}) {
 	c.write(response{
-		Message: fmt.Sprintf(form, s...),
+		Message: format(s...),
 		Error:   true,
 		Code:    http.StatusInternalServerError,
 		Data:    c.context,
@@ -68,5 +81,14 @@ type response struct {
 	Message string      `json:"message"`
 	Error   bool        `json:"error"`
 	Code    int         `json:"code"`
-	Data    interface{} `json:"data,omitempty"`
+	Data    interface{} `json:"data"`
+}
+
+func format(s ...interface{}) string {
+	var message string
+	if len(s) != 0 {
+		message = fmt.Sprint(s...)
+	}
+
+	return message
 }
